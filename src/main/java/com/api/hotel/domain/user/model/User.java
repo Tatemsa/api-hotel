@@ -2,7 +2,6 @@ package com.api.hotel.domain.user.model;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
