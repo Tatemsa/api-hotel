@@ -2,8 +2,9 @@ package com.api.hotel.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,8 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.api.hotel.domain.user.model.User;
 import com.api.hotel.domain.user.service.UserService;
 
+
 @RestController
-@RequestMapping("users")
+@RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
 	private final UserService userService;
@@ -25,14 +27,13 @@ public class UserController {
 	}
 
 	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping("create")
-	public User add(@RequestBody User user) {
-		System.out.println(user.getFirstName());
-		return this.userService.save(user);
+	@PostMapping("inscription")
+	public void inscription(@RequestBody @Validated User user) {
+		this.userService.save(user);
 	}
 
 	@ResponseStatus(HttpStatus.OK)
-	@GetMapping
+	@GetMapping("users")
 	public List<User> getAll() {
 		return this.userService.findAll();
 	}
