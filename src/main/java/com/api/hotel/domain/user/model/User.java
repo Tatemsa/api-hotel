@@ -46,7 +46,7 @@ public class User implements UserDetails {
 	@Column
 	private String pwd;
 
-	@Column
+	@Column(nullable = false)
 	private boolean active = false;
 
 	@Enumerated(EnumType.STRING)

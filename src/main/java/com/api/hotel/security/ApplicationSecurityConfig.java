@@ -17,17 +17,19 @@ public class ApplicationSecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return
 			httpSecurity
-				.csrf(AbstractHttpConfigurer::disable) //Desactivation de la  partie csrf
+				.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(
 					authorize ->
-						authorize.requestMatchers(HttpMethod.POST,"/inscription").permitAll()
-							.anyRequest().authenticated()
-				).build(); //Cette configuration permet de dire que si la requete est sur la route inscription et que le verbe http est POST, on authorise, et toute autre requete necessite l'authentification
+						authorize.requestMatchers(HttpMethod.POST,"/auth").permitAll()
+							.requestMatchers("/admin").hasRole("ADMIN")
+							.requestMatchers("/users").hasRole("ADMIN")
+							.requestMatchers(HttpMethod.POST, "/blog/posts").hasAnyRole("ADMIN", "EMPLOYEE")
+							.anyRequest().permitAll()
+				).build();
 	}
 
 	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
 }

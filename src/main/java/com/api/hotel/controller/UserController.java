@@ -1,9 +1,9 @@
 package com.api.hotel.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +17,7 @@ import com.api.hotel.domain.user.service.UserService;
 
 
 @RestController
-@RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping
 public class UserController {
 
 	private final UserService userService;
@@ -27,9 +27,22 @@ public class UserController {
 	}
 
 	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping("inscription")
-	public void inscription(@RequestBody @Validated User user) {
+	@PostMapping("/auth/register")
+	public void register(@RequestBody @Validated User user) {
 		this.userService.save(user);
+	}
+
+	@ResponseStatus(HttpStatus.OK)
+	@PostMapping("/auth/activation")
+	public void userAccountActivation(@RequestBody Map<String, String> activation) {
+		this.userService.activation(activation);
+	}
+
+
+	@ResponseStatus(HttpStatus.CREATED)
+	@PostMapping("/auth/login")
+	public void login(@RequestBody @Validated String usernaame, @RequestBody @Validated String pwd) {
+		System.out.println("L'utilisateur " + usernaame + " tente de se connecter.");
 	}
 
 	@ResponseStatus(HttpStatus.OK)
