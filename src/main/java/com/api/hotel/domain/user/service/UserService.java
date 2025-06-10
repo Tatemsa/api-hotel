@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +17,7 @@ import com.api.hotel.domain.user.model.Validation;
 import com.api.hotel.domain.user.repository.UserRepository;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
 	private final UserRepository userRepository;
 	private final ValidationService validationService;
@@ -59,5 +62,16 @@ public class UserService {
 		user.setActive(true);
 		this.userRepository.save(user);
 
+	}
+
+	/**
+	 * @param username
+	 * @return
+	 * @throws UsernameNotFoundException
+	 */
+	@Override
+	public User loadUserByUsername(String username) throws UsernameNotFoundException {
+		System.out.println("Le user " + username + " tente une connexion");
+		return this.userRepository.findByEmailOrUsername(username, username).orElseThrow(() -> new UsernameNotFoundException("User nor found"));
 	}
 }
