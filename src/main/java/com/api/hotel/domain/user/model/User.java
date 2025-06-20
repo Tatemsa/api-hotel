@@ -30,20 +30,27 @@ public class User implements UserDetails {
 
 	@Enumerated(EnumType.STRING)
 	@Column(length = 20)
-	private Role role = Role.CLIENT;
+	private Role role;
 
 	private boolean accountNonExpired = true;
 	private boolean accountNonLocked = true;
 	private boolean credentialsNonExpired = true;
 	private boolean enabled = true;
 
-	// Constructeurs
-	public User() {}
+	public User() {
+	}
 
 	public User(String username, String email, String password) {
 		this.username = username;
 		this.email = email;
 		this.password = password;
+	}
+
+	public User(String username, String email, String password, Role role) {
+		this.username = username;
+		this.email = email;
+		this.password = password;
+		this.role = role;
 	}
 
 	// Getters et Setters
