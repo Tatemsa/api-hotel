@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import com.api.hotel.Exception.ApplicationControllerAdvice;
 import com.api.hotel.domain.user.model.Role;
 import com.api.hotel.domain.user.model.User;
 import com.api.hotel.domain.user.repository.UserRepository;
@@ -21,9 +22,18 @@ import com.api.hotel.dto.TokenRefreshRequest;
 import com.api.hotel.dto.TokenRefreshResponse;
 import com.api.hotel.security.JwtService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin(origins = "*", maxAge = 3600)
+@Tag(name = "Authentification", description = "Endpoints pour l'authentification des utilisateurs")
 public class AuthController {
 
 	@Autowired
@@ -39,6 +49,32 @@ public class AuthController {
 	JwtService jwtService;
 
 	@PostMapping("/signin")
+	@Operation(
+		summary = "Connexion utilisateur",
+		description = "Authentifie un utilisateur et retourne un token JWT"
+	)
+	@ApiResponses(value = {
+		@ApiResponse(
+			responseCode = "200",
+			description = "Connexion réussie",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = JwtResponse.class)
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "Identifiants invalides",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = ApplicationControllerAdvice.ErrorResponse.class)
+			)
+		),
+		@ApiResponse(
+			responseCode = "400",
+			description = "Données de requête invalides"
+		)
+	})
 	public ResponseEntity<?> authenticateUser(@Validated @RequestBody LoginRequest loginRequest) {
 		Authentication authentication = authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -80,12 +116,45 @@ public class AuthController {
 	}
 
 	@PostMapping("/signout")
+	@Operation(
+		summary = "Déconnexion utilisateur",
+		description = "Déconnecte l'utilisateur et invalide le token"
+	)
+	@SecurityRequirement(name = "Bearer Authentication")
+	@ApiResponses(value = {
+		@ApiResponse(
+			responseCode = "200",
+			description = "Déconnexion réussie"
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "Token invalide ou expiré"
+		)
+	})
 	public ResponseEntity<?> logoutUser() {
 		SecurityContextHolder.clearContext();
 		return ResponseEntity.ok(new MessageResponse("User signed out successfully!"));
 	}
 
 	@PostMapping("/refresh")
+	@Operation(
+		summary = "Renouveler le token",
+		description = "Génère un nouveau token JWT à partir d'un refresh token"
+	)
+	@ApiResponses(value = {
+		@ApiResponse(
+			responseCode = "200",
+			description = "Token renouvelé avec succès",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = JwtResponse.class)
+			)
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "Refresh token invalide"
+		)
+	})
 	public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {
 		String requestRefreshToken = request.getRefreshToken();
 

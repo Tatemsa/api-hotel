@@ -4,6 +4,9 @@ import jakarta.annotation.Nonnull;
 
 import com.api.hotel.domain.user.model.Role;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Réponse d'Inscription")
 public class SignupRequest {
 
 	private String username;

@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.api.hotel.dto.ErrorEntity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @ControllerAdvice
 @RestControllerAdvice
+@Schema(description = "Gestionnaire des erreurs")
 public class ApplicationControllerAdvice {
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

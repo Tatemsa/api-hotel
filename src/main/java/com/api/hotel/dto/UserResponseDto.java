@@ -2,9 +2,11 @@ package com.api.hotel.dto;
 
 import com.api.hotel.domain.user.model.Role;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
+@Schema(description = "Réponse à demande d'obtention d'un utilisateur")
 public class UserResponseDto {
 	private String username;
 	private String email;
