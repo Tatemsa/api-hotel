@@ -1,5 +1,8 @@
 package com.api.hotel.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Réponse de rafraichissement de token")
 public class TokenRefreshResponse {
 
 	private String accessToken;

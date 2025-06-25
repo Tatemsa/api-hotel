@@ -2,6 +2,11 @@ package com.api.hotel.dto;
 
 import jakarta.annotation.Nonnull;
 
+import com.api.hotel.domain.user.model.Role;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Réponse d'Inscription")
 public class SignupRequest {
 
 	private String username;
@@ -9,6 +14,8 @@ public class SignupRequest {
 	private String email;
 
 	private String password;
+
+	private Role role;
 
 	public String getUsername() { return username; }
 	public void setUsername(String username) { this.username = username; }
@@ -18,4 +25,11 @@ public class SignupRequest {
 
 	public String getPassword() { return password; }
 	public void setPassword(String password) { this.password = password; }
+
+	public Role getRole() {
+		return role;
+	}
+	public void setRole(Role role) {
+		this.role = role;
+	}
 }

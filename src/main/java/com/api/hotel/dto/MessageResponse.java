@@ -1,5 +1,8 @@
 package com.api.hotel.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Message d'erreur")
 public class MessageResponse {
 	private String message;
 

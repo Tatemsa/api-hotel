@@ -10,19 +10,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 @Service
 public class JwtService {
 
 	private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+	private String secretKey = "";
 
 	@Autowired
 	private JwtConfig jwtConfig;
+
+	public JwtService() {
+		try {
+			KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+			SecretKey sk = keyGen.generateKey();
+			secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
@@ -47,11 +62,13 @@ public class JwtService {
 
 	private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
 		return Jwts.builder()
-			.setClaims(extraClaims)
-			.setSubject(userDetails.getUsername())
-			.setIssuedAt(new Date(System.currentTimeMillis()))
-			.setExpiration(new Date(System.currentTimeMillis() + expiration))
-			.signWith(getSignInKey(), SignatureAlgorithm.HS256)
+			.claims()
+			.add(extraClaims)
+			.subject(userDetails.getUsername())
+			.issuedAt(new Date(System.currentTimeMillis()))
+			.expiration(new Date(System.currentTimeMillis() + expiration))
+			.and()
+			.signWith(getSignInKey())
 			.compact();
 	}
 
@@ -69,26 +86,15 @@ public class JwtService {
 	}
 
 	private Claims extractAllClaims(String token) {
-		try {
-			return Jwts.parser()
-				.setSigningKey(getSignInKey())
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
-		} catch (MalformedJwtException e) {
-			logger.error("Invalid JWT token: {}", e.getMessage());
-		} catch (ExpiredJwtException e) {
-			logger.error("JWT token is expired: {}", e.getMessage());
-		} catch (UnsupportedJwtException e) {
-			logger.error("JWT token is unsupported: {}", e.getMessage());
-		} catch (IllegalArgumentException e) {
-			logger.error("JWT claims string is empty: {}", e.getMessage());
-		}
-		return null;
+		return Jwts.parser()
+			.verifyWith(getSignInKey())
+			.build()
+			.parseSignedClaims(token)
+			.getPayload();
 	}
 
-	private Key getSignInKey() {
-		byte[] keyBytes = Decoders.BASE64.decode(jwtConfig.getSecret());
+	private SecretKey getSignInKey() {
+		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
 }
