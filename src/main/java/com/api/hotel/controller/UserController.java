@@ -2,8 +2,6 @@ package com.api.hotel.controller;
 
 import java.util.List;
 
-import org.apache.coyote.BadRequestException;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.hotel.Exception.BadRequestException;
+import com.api.hotel.domain.user.model.Role;
 import com.api.hotel.domain.user.model.User;
 import com.api.hotel.domain.user.service.UserService;
 import com.api.hotel.dto.CreateUserDto;
@@ -69,19 +69,27 @@ public class UserController {
 	public ResponseEntity<UserResponseDto> createUser(
 		@Validated @RequestBody CreateUserDto createUserDto,
 		@AuthenticationPrincipal User currentUser) {
-		UserResponseDto createdUser = userService.createUser(createUserDto, currentUser);
+		UserResponseDto createdUser = null;
+		if (currentUser.getRole() == Role.ADMIN) {
+			createdUser = userService.createUser(createUserDto);
+		} else if (currentUser.getRole() == Role.EMPLOYEE) {
+			if (createUserDto.getRole() != Role.CLIENT) {
+				throw new BadRequestException("Seul l'administrateur peut créer des employés ou d'autres administrateurs");
+			}
+			createdUser = userService.createUser(createUserDto);
+		}
 		return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
 	}
 
 	@GetMapping
 	@Operation(
-		summary = "Lister tous les utilisateurs",
-		description = "Récupère la liste paginée de tous les utilisateurs"
+		summary = "List of users",
+		description = "Get list of all users"
 	)
 	@ApiResponses(value = {
 		@ApiResponse(
 			responseCode = "200",
-			description = "Liste des utilisateurs récupérée avec succès",
+			description = "Getting users list successful",
 			content = @Content(
 				mediaType = "application/json",
 				schema = @Schema(implementation = List.class)
@@ -89,15 +97,15 @@ public class UserController {
 		),
 		@ApiResponse(
 			responseCode = "401",
-			description = "Token d'authentification invalide"
+			description = "Invalid authentication token"
 		),
 		@ApiResponse(
 			responseCode = "403",
 			description = "Accès non autorisé"
 		)
 	})
-	public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-		List<UserResponseDto> users = userService.getAllUsers();
+	public ResponseEntity<List<UserResponseDto>> getAllUsers(@AuthenticationPrincipal User currentUser) {
+		List<UserResponseDto> users = userService.getAllUsers(currentUser);
 		return ResponseEntity.ok(users);
 	}
 
@@ -124,8 +132,8 @@ public class UserController {
 			description = "Token d'authentification invalide"
 		)
 	})
-	public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
-		UserResponseDto user = userService.getUserById(id);
+	public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
+		UserResponseDto user = userService.getUserById(id, currentUser);
 		return ResponseEntity.ok(user);
 	}
 
@@ -194,6 +202,16 @@ public class UserController {
 
 	@PatchMapping("/{id}/deactivate")
 	@PreAuthorize("hasRole('ADMIN')")
+	@ApiResponses(value = {
+		@ApiResponse(
+			responseCode = "200",
+			description = "Compte de l'utilisateur désactivé avec succès"
+		),
+		@ApiResponse(
+			responseCode = "404",
+			description = "Utilisateur non trouvé"
+		),
+	})
 	public ResponseEntity<UserResponseDto> deactivateUser(
 		@PathVariable Long id,
 		@AuthenticationPrincipal User currentUser) {
@@ -202,6 +220,10 @@ public class UserController {
 	}
 
 	@GetMapping("/profile")
+	@Operation(
+		summary = "Voir le profile",
+		description = "Voir le profile de l'utilisateur connecté"
+	)
 	public ResponseEntity<UserResponseDto> getCurrentUserProfile(
 		@AuthenticationPrincipal User currentUser) {
 		UserResponseDto user = userService.getUserById(currentUser.getId());

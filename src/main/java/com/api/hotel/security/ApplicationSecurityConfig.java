@@ -45,10 +45,14 @@ public class ApplicationSecurityConfig {
 				.requestMatchers("/api/auth/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
 
-				.requestMatchers(HttpMethod.GET, "/api/user/**").hasAnyRole("CLIENT", "ADMIN")
-				.requestMatchers(HttpMethod.POST, "/api/user/**").hasAnyRole("CLIENT", "ADMIN")
-				.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole( "ADMIN")
-				.requestMatchers(HttpMethod.GET, "/api/employees").hasAnyRole( "ADMIN")
+				.requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole( "ADMIN", "EMPLOYEE")
+				.requestMatchers(HttpMethod.GET, "/api/users/:id").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole( "ADMIN", "EMPLOYEE")
+				.requestMatchers(HttpMethod.PUT, "/api/users/:id").permitAll()
+				.requestMatchers(HttpMethod.DELETE, "/api/users/:id").hasAnyRole( "ADMIN")
+				.requestMatchers(HttpMethod.GET, "/api/users/profile").permitAll()
+				.requestMatchers(HttpMethod.PATCH, "/api/users/:id/status").hasAnyRole( "ADMIN", "EMPLOYEE")
+				.requestMatchers(HttpMethod.GET, "/api/users/search").hasAnyRole( "ADMIN", "EMPLOYEE")
 
 				.requestMatchers("/api/admin/**").hasRole("ADMIN")
 				.requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")

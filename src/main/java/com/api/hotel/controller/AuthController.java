@@ -11,7 +11,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.api.hotel.Exception.ApplicationControllerAdvice;
-import com.api.hotel.domain.user.model.Role;
 import com.api.hotel.domain.user.model.User;
 import com.api.hotel.domain.user.repository.UserRepository;
 import com.api.hotel.dto.JwtResponse;
